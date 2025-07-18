@@ -25,7 +25,7 @@ FROM nginx:1.25-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # 暴露 80 端口
-EXPOSE 80
+EXPOSE 8066
 
 # 启动 Nginx 服务
 CMD ["nginx", "-g", "daemon off;"]
