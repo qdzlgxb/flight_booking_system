@@ -1,0 +1,71 @@
+name: Build and Release Docker Images
+
+on:
+  # 允许手动触发此工作流程
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '发布版本号 (例如: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. 设置 Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # 3. 构建前端 Docker 镜像
+      - name: Build frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false # 不推送到 Docker Hub
+          tags: frontend-app:${{ github.event.inputs.version }}
+          load: true # 将镜像加载到 Docker 中
+
+      # 4. 构建后端 Docker 镜像
+      - name: Build backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false # 不推送到 Docker Hub
+          tags: backend-app:${{ github.event.inputs.version }}
+          load: true # 将镜像加载到 Docker 中
+
+      # 5. 将 Docker 镜像打包成 tar 文件
+      - name: Save Docker images to tar
+        run: docker save -o images.tar frontend-app:${{ github.event.inputs.version }} backend-app:${{ github.event.inputs.version }}
+
+      # 6. 创建 Release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: Release ${{ github.event.inputs.version }}
+          body: |
+            发布版本 ${{ github.event.inputs.version }}，包含前端和后端的 Docker 镜像。
+          draft: false
+          prerelease: false
+
+      # 7. 上传 tar 文件到 Release
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./images.tar
+          asset_name: images-${{ github.event.inputs.version }}.tar
+          asset_content_type: application/x-tar
