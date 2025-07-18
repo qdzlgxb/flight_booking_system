@@ -70,20 +70,14 @@
 
 ### 后端配置
 
-1. **克隆项目**
-```bash
-git clone <repository-url>
-cd flight_booking_system
-```
-
-2. **数据库配置**
+1. **数据库配置**
 ```bash
 # 创建数据库
 mysql -u root -p
 CREATE DATABASE JavaFullStackTraining;
 ```
 
-3. **配置文件**
+2. **配置文件**
 修改 `backend/src/main/resources/application.yml`:
 ```yaml
 spring:
@@ -106,7 +100,7 @@ jwt:
   expiration: 86400000 # 24小时
 ```
 
-4. **启动后端服务**
+3. **启动后端服务**
 ```bash
 cd backend
 mvn clean install
