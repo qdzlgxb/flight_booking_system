@@ -1,17 +1,21 @@
 name: Build and Release Docker Images
 
 on:
-  # 允许手动触发此工作流程
   workflow_dispatch:
     inputs:
       version:
-        description: '发布版本号 (例如: v1.0.0)'
+        description: '发布版本号'
         required: true
         default: 'v1.0.0'
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    # --- 新增内容开始 ---
+    # 授予工作流创建 Release 的权限
+    permissions:
+      contents: write
+    # --- 新增内容结束 ---
     steps:
       # 1. 检出代码
       - name: Checkout repository
@@ -27,9 +31,9 @@ jobs:
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
-          push: false # 不推送到 Docker Hub
+          push: false 
           tags: frontend-app:${{ github.event.inputs.version }}
-          load: true # 将镜像加载到 Docker 中
+          load: true 
 
       # 4. 构建后端 Docker 镜像
       - name: Build backend image
@@ -37,9 +41,9 @@ jobs:
         with:
           context: ./backend
           file: ./backend/Dockerfile
-          push: false # 不推送到 Docker Hub
+          push: false 
           tags: backend-app:${{ github.event.inputs.version }}
-          load: true # 将镜像加载到 Docker 中
+          load: true 
 
       # 5. 将 Docker 镜像打包成 tar 文件
       - name: Save Docker images to tar
