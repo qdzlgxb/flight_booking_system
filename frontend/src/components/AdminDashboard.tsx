@@ -17,6 +17,17 @@ const AdminDashboard: React.FC = () => {
     city: ''
   });
 
+  // 新增：航班表单
+  const [flightForm, setFlightForm] = useState({
+    flightNumber: '',
+    departureAirport: { id: 0, code: '', name: '', city: '' },
+    destinationAirport: { id: 0, code: '', name: '', city: '' },
+    departureDate: '',
+    departureTime: '',
+    arrivalTime: '',
+    price: 0
+  });
+
   useEffect(() => {
     loadData();
   }, [activeTab]);
@@ -34,6 +45,9 @@ const AdminDashboard: React.FC = () => {
         case 'flights':
           const flightList = await adminAPI.getAllFlights();
           setFlights(flightList);
+          // 新增：加载航班管理时也加载机场列表用于表单下拉选择
+          const airportsForFlightForm = await airportAPI.getAllAirports();
+          setAirports(airportsForFlightForm);
           break;
         case 'bookings':
           const bookingList = await adminAPI.getAllBookings();
@@ -58,6 +72,32 @@ const AdminDashboard: React.FC = () => {
       alert('创建失败：' + (err.response?.data || err.message));
     }
   };
+  
+  // 新增：处理航班创建
+  const handleCreateFlight = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!flightForm.departureAirport.id || !flightForm.destinationAirport.id) {
+        alert("请选择出发和到达机场");
+        return;
+    }
+    try {
+      await adminAPI.createFlight(flightForm);
+      setFlightForm({
+        flightNumber: '',
+        departureAirport: { id: 0, code: '', name: '', city: '' },
+        destinationAirport: { id: 0, code: '', name: '', city: '' },
+        departureDate: '',
+        departureTime: '',
+        arrivalTime: '',
+        price: 0
+      });
+      loadData();
+      alert('航班创建成功！');
+    } catch (err: any) {
+      alert('创建失败：' + (err.response?.data || err.message));
+    }
+  };
+
 
   const handleDeleteAirport = async (id: number) => {
     if (window.confirm('确定要删除这个机场吗？')) {
@@ -78,6 +118,20 @@ const AdminDashboard: React.FC = () => {
   const formatTime = (timeString: string) => {
     return timeString.substring(0, 5);
   };
+  
+  // 新增：处理航班表单变化
+  const handleFlightFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    if (name === 'departureAirport' || name === 'destinationAirport') {
+        const selectedAirport = airports.find(airport => airport.id === Number(value));
+        if (selectedAirport) {
+            setFlightForm(prev => ({ ...prev, [name]: selectedAirport }));
+        }
+    } else {
+        setFlightForm(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -195,6 +249,90 @@ const AdminDashboard: React.FC = () => {
       {/* 航班管理 */}
       {activeTab === 'flights' && (
         <div className="space-y-6">
+          {/* 新增：添加航班的表单 */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">添加新航班</h2>
+            <form onSubmit={handleCreateFlight} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input
+                  type="text"
+                  name="flightNumber"
+                  placeholder="航班号"
+                  value={flightForm.flightNumber}
+                  onChange={handleFlightFormChange}
+                  required
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <select
+                  name="departureAirport"
+                  value={flightForm.departureAirport.id}
+                  onChange={handleFlightFormChange}
+                  required
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">选择出发机场</option>
+                  {airports.map(airport => (
+                    <option key={airport.id} value={airport.id}>
+                      {airport.name} ({airport.code})
+                    </option>
+                  ))}
+                </select>
+                <select
+                  name="destinationAirport"
+                  value={flightForm.destinationAirport.id}
+                  onChange={handleFlightFormChange}
+                  required
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">选择到达机场</option>
+                  {airports.map(airport => (
+                    <option key={airport.id} value={airport.id}>
+                      {airport.name} ({airport.code})
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="date"
+                  name="departureDate"
+                  value={flightForm.departureDate}
+                  onChange={handleFlightFormChange}
+                  required
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="time"
+                  name="departureTime"
+                  value={flightForm.departureTime}
+                  onChange={handleFlightFormChange}
+                  required
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="time"
+                  name="arrivalTime"
+                  value={flightForm.arrivalTime}
+                  onChange={handleFlightFormChange}
+                  required
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="number"
+                  name="price"
+                  placeholder="价格"
+                  value={flightForm.price}
+                  onChange={handleFlightFormChange}
+                  required
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                添加航班
+              </button>
+            </form>
+          </div>
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-4">航班列表</h2>
             <div className="space-y-4">
@@ -262,4 +400,4 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;
