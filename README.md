@@ -60,71 +60,6 @@
 - **BOOKING**: 订单表(id, user_id, flight_id, reference, status, bookingTime, totalPrice)
 - **PASSENGER**: 乘客信息表(id, firstName, lastName, email)
 
-## 安装与配置
-
-### 环境要求
-- Java 17+
-- Node.js 18+
-- MySQL 8.0+
-- Maven 3.6+
-
-### 后端配置
-
-1. **数据库配置**
-```bash
-# 创建数据库
-mysql -u root -p
-CREATE DATABASE JavaFullStackTraining;
-```
-
-2. **配置文件**
-修改 `backend/src/main/resources/application.yml`:
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://127.0.0.1:3306/JavaFullStackTraining
-    username: JavaFullStackTrainingAdmin
-    password: 8xchWheZpKiiQxnX
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
-server:
-  port: 8080
-
-jwt:
-  secret: mySecretKey123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-  expiration: 86400000 # 24小时
-```
-
-3. **启动后端服务**
-```bash
-cd backend
-mvn clean install
-mvn spring-boot:run
-```
-
-### 前端配置
-
-1. **安装依赖**
-```bash
-cd frontend
-npm install
-```
-
-2. **启动开发服务器**
-```bash
-npm run dev
-```
-
-3. **构建生产版本**
-```bash
-npm run build
-```
-
 ## API接口文档
 
 ### 认证接口
@@ -157,12 +92,12 @@ npm run build
 ### 用户操作流程
 
 1. **注册账户**
-   - 访问 `http://localhost:5173/register`
+   - 访问 `http://<ip>:80/register`
    - 填写用户名、邮箱、姓名和密码
    - 点击注册按钮
 
 2. **登录系统**
-   - 访问 `http://localhost:5173/login`
+   - 访问 `http://<ip>:80/login`
    - 输入用户名和密码
    - 登录成功后跳转到首页
 
@@ -187,7 +122,7 @@ npm run build
 
 1. **登录管理员账户**
    - 使用管理员账户登录
-   - 访问 `http://localhost:5173/admin`
+   - 访问 `http://<ip>:80/admin`
 
 2. **机场管理**
    - 添加新机场（机场代码、名称、城市）
@@ -202,109 +137,113 @@ npm run build
    - 查看特定航班的乘客列表
    - 管理订单状态
 
-## 安全特性
+## 部署说明（WSL-Docker）
 
-- **JWT认证**: 所有API请求都需要有效的JWT token
-- **角色权限**: 区分普通用户和管理员权限
-- **密码加密**: 使用Spring Security进行密码加密
-- **CORS配置**: 支持跨域请求
-- **请求验证**: 所有输入参数都经过验证
+*建议将WSL配置为版本2，并且使用镜像网络模式*
 
-## 开发指南
+1. 从项目Release页面下载最新版本的TAR镜像包
 
-### 后端开发
+2. 创建`.env`环境变量文件，根据实际情况修改
 
-1. **添加新的API端点**
-   - 在相应的Controller中添加新方法
-   - 在Service层实现业务逻辑
-   - 在Repository层处理数据访问
+   ```bash
+   # ------------------ 数据库配置 ------------------
+   # 数据库名
+   MYSQL_DATABASE=JavaFullStackTraining
+   
+   # 数据库用户名
+   MYSQL_USER=JavaFullStackTrainingAdmin
+   
+   # 数据库用户密码
+   MYSQL_PASSWORD=demopassword123
+   
+   # 数据库 root 用户密码
+   MYSQL_ROOT_PASSWORD=demorootpassword123
+   
+   # ------------------ 后端应用配置 ------------------
+   # JWT 密钥
+   JWT_SECRET=a_very_long_and_secure_secret_for_demonstration_purposes_only_123456
+   
+   # JWT 过期时间 (24小时)
+   JWT_EXPIRATION=86400000
+   
+   # 后端服务端口
+   SERVER_PORT=8080
+   ```
 
-2. **数据模型修改**
-   - 修改Entity类
-   - 更新数据库迁移脚本
-   - 相应更新DTO类
+3. 创建`docker-compose.yml`文件，根据实际情况修改，确保与.env处在同一路径中
 
-3. **安全配置**
-   - 在`WebSecurityConfig`中配置访问权限
-   - 使用`@PreAuthorize`注解进行方法级权限控制
+   该compose已经包含了mysql镜像，如需使用单独部署的数据库，可以将compose中mysql配置的部分删除，另行配置
 
-### 前端开发
+   adminer是数据库可视化管理工具，根据实际需求选择是否安装
 
-1. **添加新页面**
-   - 在`components`目录创建新组件
-   - 在`App.tsx`中添加路由配置
-   - 更新导航菜单
+   volumes和端口号需要注意命名冲突
 
-2. **API集成**
-   - 在`services/api.ts`中添加API调用方法
-   - 在`types/index.ts`中定义数据类型
-   - 在组件中使用API服务
+   ```yml
+   version: '3.8'
+   
+   services:
+     db:
+       image: mysql:8.0
+       container_name: mysql-db
+       restart: unless-stopped
+       environment:
+         MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+         MYSQL_DATABASE: ${MYSQL_DATABASE}
+         MYSQL_USER: ${MYSQL_USER}
+         MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+       volumes:
+         - mysql-data:/var/lib/mysql
+       ports:
+         - "3306:3306"
+   
+     backend:
+       image: backend-app:v1.0.0
+       container_name: flight-booking-backend
+       restart: unless-stopped
+       depends_on:
+         - db
+       ports:
+         - "8080:8080"
+       environment:
+         DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}
+         DB_USERNAME: ${MYSQL_USER}
+         DB_PASSWORD: ${MYSQL_PASSWORD}
+         JWT_SECRET: ${JWT_SECRET}
+         JWT_EXPIRATION: ${JWT_EXPIRATION}
+         SERVER_PORT: ${SERVER_PORT}
+   
+     frontend:
+       image: frontend-app:v1.0.0
+       container_name: flight-booking-frontend
+       restart: unless-stopped
+       ports:
+         - "80:80"
+       depends_on:
+         - backend
+   
+     adminer:
+       image: adminer
+       container_name: adminer
+       restart: unless-stopped
+       ports:
+         - "8088:8080"
+       depends_on:
+         - db
+   
+   volumes:
+     mysql-data:
+   ```
 
-3. **状态管理**
-   - 使用React Context进行全局状态管理
-   - 在`contexts/AuthContext.tsx`中管理用户认证状态
+4. 在下载的TAR镜像包所在路径下运行以下指令，该指令会将镜像解压后导入docker，注意文件名要修改成实际文件名
 
-## 部署说明
+   ```bash
+   docker load -i images-v1.x.x.tar
+   ```
 
-### 生产环境部署
+5. 在`docker-compose.yml`所在路径中运行docker compose
 
-1. **后端部署**
-```bash
-# 构建JAR包
-mvn clean package -DskipTests
+   ```bash
+   sudo docker compose up -d
+   ```
 
-# 运行应用
-java -jar target/flight-booking-backend-1.0.0.jar
-```
-
-2. **前端部署**
-```bash
-# 构建生产版本
-npm run build
-
-# 使用nginx等Web服务器部署dist目录
-```
-
-3. **数据库配置**
-   - 配置生产环境MySQL数据库
-   - 更新application.yml中的数据库连接信息
-   - 运行数据库迁移脚本
-
-### 环境变量配置
-
-```bash
-# 后端环境变量
-export DB_URL=jdbc:mysql://localhost:3306/JavaFullStackTraining
-export DB_USERNAME=your_username
-export DB_PASSWORD=your_password
-export JWT_SECRET=your_jwt_secret
-export SERVER_PORT=8080
-
-# 前端环境变量
-export VITE_API_BASE_URL=http://localhost:8080/api
-```
-
-## 故障排除
-
-### 常见问题
-
-1. **数据库连接失败**
-   - 检查MySQL服务是否启动
-   - 验证数据库连接参数
-   - 确认数据库权限配置
-
-2. **JWT认证失败**
-   - 检查JWT密钥配置
-   - 确认token是否过期
-   - 验证请求头格式
-
-3. **跨域请求问题**
-   - 检查后端CORS配置
-   - 确认前端API基础URL设置
-   - 验证请求方法和头部
-
-4. **前端构建错误**
-   - 检查Node.js和npm版本
-   - 清理node_modules重新安装
-   - 验证TypeScript配置
-
+6. 此时访问`http://<you ip>:80`将进入到前端首页
