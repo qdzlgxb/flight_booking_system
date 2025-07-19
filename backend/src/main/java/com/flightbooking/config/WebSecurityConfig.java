@@ -59,9 +59,9 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .exceptionHandling(exceptionHandling -> 
+                .exceptionHandling(exceptionHandling ->
                     exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(sessionManagement -> 
+                .sessionManagement(sessionManagement ->
                     sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/**").permitAll()
@@ -70,7 +70,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/", "/index.html", "/static/**", "/assets/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/**/*.js", "/**/*.css", "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.svg").permitAll()
+                        // 下面这行错误的规则已被删除
+                        // .requestMatchers("/**/*.js", "/**/*.css", "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.svg").permitAll()
                         .requestMatchers("/login", "/register", "/dashboard", "/booking", "/search", "/admin").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
@@ -93,4 +94,4 @@ public class WebSecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-} 
+}

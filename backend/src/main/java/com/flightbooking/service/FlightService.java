@@ -7,6 +7,7 @@ import com.flightbooking.repository.AirportRepository;
 import com.flightbooking.dto.FlightSearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // 新增导入
 
 import java.util.List;
 import java.util.Optional;
@@ -69,11 +70,22 @@ public class FlightService {
         return flightRepository.findById(id);
     }
 
+    @Transactional // 新增注解
     public Flight saveFlight(Flight flight) {
+        // 根据传入的机场ID，从数据库中查找完整的机场实体
+        Airport departureAirport = airportRepository.findById(flight.getDepartureAirport().getId())
+                .orElseThrow(() -> new RuntimeException("出发机场不存在: " + flight.getDepartureAirport().getId()));
+        Airport destinationAirport = airportRepository.findById(flight.getDestinationAirport().getId())
+                .orElseThrow(() -> new RuntimeException("到达机场不存在: " + flight.getDestinationAirport().getId()));
+
+        // 将从数据库中查找到的受管实体设置到航班对象中
+        flight.setDepartureAirport(departureAirport);
+        flight.setDestinationAirport(destinationAirport);
+
         return flightRepository.save(flight);
     }
 
     public void deleteFlight(Long id) {
         flightRepository.deleteById(id);
     }
-} 
+}

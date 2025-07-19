@@ -1,9 +1,11 @@
 package com.flightbooking.entity;
 
+// 移除 com.fasterxml.jackson.annotation.JsonFormat 的导入
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Date;
-import java.sql.Time;
+// 移除 java.sql.Time 的导入
+import java.time.LocalTime; // 新增导入
 
 @Entity
 @Table(name = "FLIGHT")
@@ -27,10 +29,10 @@ public class Flight {
     private Date departureDate;
 
     @Column(nullable = false)
-    private Time departureTime;
+    private LocalTime departureTime; // *** 类型修改为 LocalTime ***
 
     @Column(nullable = false)
-    private Time arrivalTime;
+    private LocalTime arrivalTime; // *** 类型修改为 LocalTime ***
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -38,8 +40,9 @@ public class Flight {
     // Constructors
     public Flight() {}
 
+    // 构造函数参数类型同步修改
     public Flight(String flightNumber, Airport departureAirport, Airport destinationAirport,
-                  Date departureDate, Time departureTime, Time arrivalTime, BigDecimal price) {
+                  Date departureDate, LocalTime departureTime, LocalTime arrivalTime, BigDecimal price) {
         this.flightNumber = flightNumber;
         this.departureAirport = departureAirport;
         this.destinationAirport = destinationAirport;
@@ -49,7 +52,7 @@ public class Flight {
         this.price = price;
     }
 
-    // Getters and Setters
+    // Getters and Setters 的类型同步修改
     public Long getId() {
         return id;
     }
@@ -90,19 +93,19 @@ public class Flight {
         this.departureDate = departureDate;
     }
 
-    public Time getDepartureTime() {
+    public LocalTime getDepartureTime() {
         return departureTime;
     }
 
-    public void setDepartureTime(Time departureTime) {
+    public void setDepartureTime(LocalTime departureTime) {
         this.departureTime = departureTime;
     }
 
-    public Time getArrivalTime() {
+    public LocalTime getArrivalTime() {
         return arrivalTime;
     }
 
-    public void setArrivalTime(Time arrivalTime) {
+    public void setArrivalTime(LocalTime arrivalTime) {
         this.arrivalTime = arrivalTime;
     }
 
@@ -113,4 +116,4 @@ public class Flight {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
-} 
+}

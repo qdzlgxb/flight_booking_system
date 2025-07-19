@@ -17,7 +17,7 @@ const AdminDashboard: React.FC = () => {
     city: ''
   });
 
-  // 新增：航班表单
+  // 航班表单
   const [flightForm, setFlightForm] = useState({
     flightNumber: '',
     departureAirport: { id: 0, code: '', name: '', city: '' },
@@ -45,7 +45,6 @@ const AdminDashboard: React.FC = () => {
         case 'flights':
           const flightList = await adminAPI.getAllFlights();
           setFlights(flightList);
-          // 新增：加载航班管理时也加载机场列表用于表单下拉选择
           const airportsForFlightForm = await airportAPI.getAllAirports();
           setAirports(airportsForFlightForm);
           break;
@@ -73,7 +72,6 @@ const AdminDashboard: React.FC = () => {
     }
   };
   
-  // 新增：处理航班创建
   const handleCreateFlight = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!flightForm.departureAirport.id || !flightForm.destinationAirport.id) {
@@ -119,7 +117,6 @@ const AdminDashboard: React.FC = () => {
     return timeString.substring(0, 5);
   };
   
-  // 新增：处理航班表单变化
   const handleFlightFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'departureAirport' || name === 'destinationAirport') {
@@ -249,81 +246,101 @@ const AdminDashboard: React.FC = () => {
       {/* 航班管理 */}
       {activeTab === 'flights' && (
         <div className="space-y-6">
-          {/* 新增：添加航班的表单 */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-4">添加新航班</h2>
             <form onSubmit={handleCreateFlight} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input
-                  type="text"
-                  name="flightNumber"
-                  placeholder="航班号"
-                  value={flightForm.flightNumber}
-                  onChange={handleFlightFormChange}
-                  required
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <select
-                  name="departureAirport"
-                  value={flightForm.departureAirport.id}
-                  onChange={handleFlightFormChange}
-                  required
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">选择出发机场</option>
-                  {airports.map(airport => (
-                    <option key={airport.id} value={airport.id}>
-                      {airport.name} ({airport.code})
-                    </option>
-                  ))}
-                </select>
-                <select
-                  name="destinationAirport"
-                  value={flightForm.destinationAirport.id}
-                  onChange={handleFlightFormChange}
-                  required
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">选择到达机场</option>
-                  {airports.map(airport => (
-                    <option key={airport.id} value={airport.id}>
-                      {airport.name} ({airport.code})
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="date"
-                  name="departureDate"
-                  value={flightForm.departureDate}
-                  onChange={handleFlightFormChange}
-                  required
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  type="time"
-                  name="departureTime"
-                  value={flightForm.departureTime}
-                  onChange={handleFlightFormChange}
-                  required
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  type="time"
-                  name="arrivalTime"
-                  value={flightForm.arrivalTime}
-                  onChange={handleFlightFormChange}
-                  required
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  type="number"
-                  name="price"
-                  placeholder="价格"
-                  value={flightForm.price}
-                  onChange={handleFlightFormChange}
-                  required
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">航班号</label>
+                  <input
+                    type="text"
+                    name="flightNumber"
+                    placeholder="例如: CA123"
+                    value={flightForm.flightNumber}
+                    onChange={handleFlightFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">出发机场</label>
+                  <select
+                    name="departureAirport"
+                    value={flightForm.departureAirport.id}
+                    onChange={handleFlightFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">选择出发机场</option>
+                    {airports.map(airport => (
+                      <option key={airport.id} value={airport.id}>
+                        {airport.name} ({airport.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">到达机场</label>
+                  <select
+                    name="destinationAirport"
+                    value={flightForm.destinationAirport.id}
+                    onChange={handleFlightFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">选择到达机场</option>
+                    {airports.map(airport => (
+                      <option key={airport.id} value={airport.id}>
+                        {airport.name} ({airport.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">出发日期</label>
+                  <input
+                    type="date"
+                    name="departureDate"
+                    value={flightForm.departureDate}
+                    onChange={handleFlightFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">出发时间</label>
+                  <input
+                    type="time"
+                    name="departureTime"
+                    value={flightForm.departureTime}
+                    onChange={handleFlightFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">到达时间</label>
+                  <input
+                    type="time"
+                    name="arrivalTime"
+                    value={flightForm.arrivalTime}
+                    onChange={handleFlightFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">价格 (元)</label>
+                  <input
+                    type="number"
+                    name="price"
+                    placeholder="例如: 1280"
+                    value={flightForm.price}
+                    onChange={handleFlightFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
               <button
                 type="submit"
