@@ -181,6 +181,7 @@ npm run build
    - 访问 `http://localhost:5173/bookings`
    - 查看历史订单
    - 查看订单状态和详情
+   
 
 ### 管理员操作流程
 
