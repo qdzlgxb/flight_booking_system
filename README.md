@@ -113,7 +113,7 @@
    - 完成支付流程
 
 5. **管理订单**
-   - 访问 `http://localhost:5173/bookings`
+   - 访问 `http://<ip>:80/bookings`
    - 查看历史订单
    - 查看订单状态和详情
    
